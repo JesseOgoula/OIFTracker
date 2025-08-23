@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Apprenants</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; }
+        tr:hover { background-color: #f5f5f5; }
+        input[type="text"] { padding: 8px; width: 300px; }
+        .search-bar { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h1>Dashboard des Apprenants</h1>
+        {% if view == 'admin' %}
+            {% if not is_admin %}
+                <a href="/login" style="padding:8px 16px;background:#007bff;color:#fff;border-radius:6px;text-decoration:none;">Connexion admin</a>
+            {% else %}
+                <a href="/logout" style="padding:8px 16px;background:#c00;color:#fff;border-radius:6px;text-decoration:none;">Déconnexion</a>
+            {% endif %}
+        {% endif %}
+    </div>
+    <form method="get" class="search-bar" style="display:flex;align-items:center;gap:8px;">
+        <input type="text" name="search" placeholder="Rechercher par nom..." value="{{ search }}" style="flex:1;">
+        <button type="submit">Rechercher</button>
+        {% if search %}
+            <a href="/" style="text-decoration:none;font-size:1.5em;color:#888;padding:0 8px;" title="Effacer la recherche">&#10006;</a>
+        {% endif %}
+        {% if view == 'admin' %}
+            <a href="?view=simple" style="margin-left:auto;">Vue simple</a>
+        {% elif view == 'simple' %}
+            {# aucun bouton de switch #}
+        {% else %}
+            <a href="?view=admin" style="margin-left:auto;">Vue admin</a>
+        {% endif %}
+    </form>
+
+    {% if view == 'admin' %}
+        <div style="margin-bottom:24px;">
+            <h3>Statistiques globales</h3>
+            {% if is_admin %}
+                <form action="/upload" method="post" enctype="multipart/form-data" style="margin:16px 0;">
+                    <label for="csvfile"><strong>Mettre à jour les données (CSV) :</strong></label>
+                    <input type="file" name="csvfile" id="csvfile" accept=".csv" required>
+                    <button type="submit">Uploader</button>
+                </form>
+                {% if upload_message %}
+                    <div style="color:green;">{{ upload_message }}</div>
+                {% endif %}
+            {% endif %}
+            <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: flex-start;">
+                <div style="flex:1; min-width:220px; text-align:center;">
+                    <h5>Total apprenants</h5>
+                    <canvas id="totalLearnersChart" width="180" height="180"></canvas>
+                </div>
+                <div style="flex:1; min-width:220px; text-align:center;">
+                    <h5>Ont terminé</h5>
+                    <canvas id="completedChart" width="180" height="180"></canvas>
+                </div>
+                <div style="flex:1; min-width:220px; text-align:center;">
+                    <h5>Non terminés</h5>
+                    <canvas id="notCompletedChart" width="180" height="180"></canvas>
+                </div>
+                <div style="flex:1; min-width:220px; text-align:center;">
+                    <h5>Taux de complétion</h5>
+                    <canvas id="completionRateChart" width="180" height="180"></canvas>
+                </div>
+            </div>
+        </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+            <script>
+    const totalLearners = {{ total_learners|tojson|safe }};
+    const completed = {{ completed_count|tojson|safe }};
+    const notCompleted = {{ not_completed_count|tojson|safe }};
+    const completionRate = {{ completion_rate|tojson|safe }};
+
+    // Total apprenants (single value bar)
+    new Chart(document.getElementById('totalLearnersChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Total'],
+            datasets: [{
+                label: 'Apprenants',
+                data: [totalLearners],
+                backgroundColor: ['#007bff']
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'top',
+                    color: '#333',
+                    font: { weight: 'bold', size: 18 },
+                    formatter: function(value) { return value; }
+                }
+            },
+            scales: { y: { beginAtZero: true } }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Ont terminé (doughnut)
+    new Chart(document.getElementById('completedChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Terminés', 'Reste'],
+            datasets: [{
+                data: [completed, totalLearners - completed],
+                backgroundColor: ['#28a745', '#e9ecef']
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                datalabels: {
+                    color: '#333',
+                    font: { weight: 'bold', size: 18 },
+                    formatter: function(value, ctx) {
+                        return value;
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Non terminés (doughnut)
+    new Chart(document.getElementById('notCompletedChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Non terminés', 'Reste'],
+            datasets: [{
+                data: [notCompleted, totalLearners - notCompleted],
+                backgroundColor: ['#dc3545', '#e9ecef']
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                datalabels: {
+                    color: '#333',
+                    font: { weight: 'bold', size: 18 },
+                    formatter: function(value, ctx) {
+                        return value;
+                    }
+                }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    // Taux de complétion (radial bar)
+    new Chart(document.getElementById('completionRateChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Complété', 'Non complété'],
+            datasets: [{
+                data: [completionRate, 100 - completionRate],
+                backgroundColor: ['#17a2b8', '#e9ecef']
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'bottom' },
+                datalabels: {
+                    color: '#333',
+                    font: { weight: 'bold', size: 18 },
+                    formatter: function(value, ctx) {
+                        return value + (ctx.dataIndex === 0 ? ' %' : '');
+                    }
+                }
+            },
+            cutout: '80%'
+        },
+        plugins: [ChartDataLabels]
+    });
+            </script>
+    {% endif %}
+
+    {% if no_data %}
+        <div style="margin:40px 0; text-align:center; color:#888; font-size:1.3em;">
+            <strong>Aucune donnée disponible.<br>Les données sont en attente d'upload CSV.</strong>
+        </div>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for col in columns %}
+                    <td>
+                        {% if col == 'Nom' %}
+                            <a href="?search={{ row['Nom'] }}{% if view %}&view={{ view }}{% endif %}" style="text-decoration:underline; color:#007bff;">{{ row[col] }}</a>
+                        {% else %}
+                            {{ row[col] }}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if not no_data and data and data|length == 1 %}
+        <h2>Avancement de {{ data[0]['Nom'] }}</h2>
+        <p><strong>Pourcentage d'avancement :</strong> {{ data[0]['% Achèvement'] }}%</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Module</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for module in module_columns %}
+                    <tr>
+                        <td>{{ module_name_map[module] }}</td>
+                        <td>{{ data[0][module] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</body>
+</html>
