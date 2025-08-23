@@ -193,7 +193,7 @@
             <thead>
                 <tr>
                     {% for col in columns %}
-                    <th>{{ col }}</th>
+                        <th{% if col == '% Achèvement' %} style="text-align:center;"{% endif %}>{{ col }}</th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -201,13 +201,15 @@
                 {% for row in data %}
                 <tr>
                     {% for col in columns %}
-                    <td>
-                        {% if col == 'Nom' %}
-                            <a href="?search={{ row['Nom'] }}{% if view %}&view={{ view }}{% endif %}" style="text-decoration:underline; color:#007bff;">{{ row[col] }}</a>
-                        {% else %}
-                            {{ row[col] }}
-                        {% endif %}
-                    </td>
+                        <td{% if col == '% Achèvement' %} style="text-align:center; font-weight:bold;"{% endif %}>
+                            {% if col == 'Nom' %}
+                                <a href="?search={{ row['Nom'] }}{% if view %}&view={{ view }}{% endif %}" style="text-decoration:underline; color:#007bff;">{{ row[col] }}</a>
+                            {% elif col == '% Achèvement' %}
+                                {{ row[col] }}%
+                            {% else %}
+                                {{ row[col] }}
+                            {% endif %}
+                        </td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -222,14 +224,14 @@
             <thead>
                 <tr>
                     <th>Module</th>
-                    <th>Statut</th>
+                        <th style="text-align:center;">Statut</th>
                 </tr>
             </thead>
             <tbody>
                 {% for module in module_columns %}
                     <tr>
                         <td>{{ module_name_map[module] }}</td>
-                        <td>{{ data[0][module] }}</td>
+                            <td style="text-align:center; font-size:1.2em;">{{ data[0][module] }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
