@@ -14,30 +14,32 @@
     </style>
 </head>
 <body>
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h1>Dashboard des Apprenants</h1>
-        {% if view == 'admin' %}
-            {% if not is_admin %}
-                <a href="/login" style="padding:8px 16px;background:#007bff;color:#fff;border-radius:6px;text-decoration:none;">Connexion admin</a>
-            {% else %}
-                <a href="/logout" style="padding:8px 16px;background:#c00;color:#fff;border-radius:6px;text-decoration:none;">Déconnexion</a>
+    <div style="position:relative;min-height:30vh;">
+        {% if view != 'admin' and not is_admin %}
+            <div style="width:100%;display:flex;justify-content:center;align-items:center;margin-top:24px;">
+                <a href="/login" style="padding:8px 18px;background:#007bff;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Connexion</a>
+            </div>
+        {% endif %}
+        <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;">
+            <h1 style="text-align:center;">Dashboard des Apprenants</h1>
+            {% if view == 'admin' %}
+                <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;">
+                {% if is_admin %}
+                    <a href="/logout" style="padding:8px 16px;background:#c00;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Déconnexion</a>
+                {% endif %}
+                </div>
+            {# Bouton Connexion admin supprimé, seul le bouton Connexion centré reste #}
             {% endif %}
-        {% endif %}
+            <form method="get" class="search-bar" style="display:flex;align-items:center;gap:8px;width:100%;max-width:98vw;justify-content:center;margin-top:32px;">
+                <input type="text" name="search" placeholder="Rechercher par nom..." value="{{ search }}" style="flex:1;max-width:80vw;padding:12px;font-size:1.1em;border-radius:8px;border:1px solid #ccc;">
+                <button type="submit" style="padding:12px 24px;font-size:1.1em;border-radius:8px;">Rechercher</button>
+                {% if search %}
+                    <a href="/" style="text-decoration:none;font-size:1.5em;color:#888;padding:0 8px;" title="Effacer la recherche">&#10006;</a>
+                {% endif %}
+                {# Bouton Vue admin supprimé #}
+            </form>
+        </div>
     </div>
-    <form method="get" class="search-bar" style="display:flex;align-items:center;gap:8px;">
-        <input type="text" name="search" placeholder="Rechercher par nom..." value="{{ search }}" style="flex:1;">
-        <button type="submit">Rechercher</button>
-        {% if search %}
-            <a href="/" style="text-decoration:none;font-size:1.5em;color:#888;padding:0 8px;" title="Effacer la recherche">&#10006;</a>
-        {% endif %}
-        {% if view == 'admin' %}
-            <a href="?view=simple" style="margin-left:auto;">Vue simple</a>
-        {% elif view == 'simple' %}
-            {# aucun bouton de switch #}
-        {% else %}
-            <a href="?view=admin" style="margin-left:auto;">Vue admin</a>
-        {% endif %}
-    </form>
 
     {% if view == 'admin' %}
         <div style="margin-bottom:24px;">
@@ -189,28 +191,34 @@
             <strong>Aucune donnée disponible.<br>Les données sont en attente d'upload CSV.</strong>
         </div>
     {% else %}
-        <table>
+        <table style="margin:auto; text-align:center;">
             <thead>
                 <tr>
                     {% for col in columns %}
-                        <th{% if col == '% Achèvement' %} style="text-align:center;"{% endif %}>{{ col }}</th>
+                        {% if view == 'admin' or (col|lower != 'id' and col != 'Nom' and col != '% Achèvement') %}
+                            <th style="text-align:center;">{{ col }}</th>
+                        {% endif %}
                     {% endfor %}
+                    {% if search and view == 'simple' %}
+                        <th style="text-align:center;">Nom</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
                 {% for row in data %}
                 <tr>
                     {% for col in columns %}
-                        <td{% if col == '% Achèvement' %} style="text-align:center; font-weight:bold;"{% endif %}>
-                            {% if col == 'Nom' %}
-                                <a href="?search={{ row['Nom'] }}{% if view %}&view={{ view }}{% endif %}" style="text-decoration:underline; color:#007bff;">{{ row[col] }}</a>
-                            {% elif col == '% Achèvement' %}
-                                {{ row[col] }}%
-                            {% else %}
-                                {{ row[col] }}
-                            {% endif %}
-                        </td>
+                        {% if view == 'admin' or (col|lower != 'id' and col != 'Nom' and col != '% Achèvement') %}
+                            <td style="text-align:center;">
+                                <a href="?search={{ row['Nom'] }}{% if view %}&view={{ view }}{% endif %}" style="color:#007bff;text-decoration:underline;display:block;">{{ row[col] }}</a>
+                            </td>
+                        {% endif %}
                     {% endfor %}
+                    {% if search and view == 'simple' %}
+                        <td style="text-align:center; font-weight:bold; color:#007bff;">
+                            <a href="?search={{ row['Nom'] }}&view=simple" style="color:#007bff;text-decoration:underline;">{{ row['Nom'] }}</a>
+                        </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
