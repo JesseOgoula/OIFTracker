@@ -3,87 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <title>Dashboard Apprenants</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f2f2f2; }
-        tr:hover { background-color: #f5f5f5; }
-        input[type="text"] { padding: 8px; width: 300px; }
-        .search-bar { margin-bottom: 20px; }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div style="position:relative;min-height:30vh;">
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto py-10">
         {% if view != 'admin' and not is_admin %}
-            <div style="width:100%;display:flex;justify-content:center;align-items:center;margin-top:24px;">
-                <a href="/login" style="padding:8px 18px;background:#007bff;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Connexion</a>
+            <div class="flex justify-center mb-8">
+                <a href="/login" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold shadow hover:bg-blue-700 transition">Connexion</a>
             </div>
         {% endif %}
-        <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;">
-            <h1 style="text-align:center;">Dashboard des Apprenants</h1>
+        <div class="flex flex-col items-center">
+            <h1 class="text-3xl font-bold mb-6 text-gray-800">Dashboard des Apprenants</h1>
             {% if view == 'admin' %}
-                <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;">
+                <div class="flex gap-4 mb-6">
                 {% if is_admin %}
-                    <a href="/logout" style="padding:8px 16px;background:#c00;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Déconnexion</a>
+                    <a href="/logout" class="px-5 py-2 bg-red-600 text-white rounded-lg font-bold shadow hover:bg-red-700 transition">Déconnexion</a>
                 {% endif %}
                 </div>
-            {# Bouton Connexion admin supprimé, seul le bouton Connexion centré reste #}
             {% endif %}
-            <form method="get" class="search-bar" style="display:flex;align-items:center;gap:8px;width:100%;max-width:98vw;justify-content:center;margin-top:32px;">
-                <input type="text" name="search" placeholder="Rechercher par nom..." value="{{ search }}" style="flex:1;max-width:80vw;padding:12px;font-size:1.1em;border-radius:8px;border:1px solid #ccc;">
-                <button type="submit" style="padding:12px 24px;font-size:1.1em;border-radius:8px;">Rechercher</button>
+            <form method="get" class="flex items-center gap-2 w-full max-w-xl mb-8">
+                <input type="text" name="search" placeholder="Rechercher par nom..." value="{{ search }}" class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg">
+                <button type="submit" class="px-5 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition">Rechercher</button>
                 {% if search %}
-                    <a href="/" style="text-decoration:none;font-size:1.5em;color:#888;padding:0 8px;" title="Effacer la recherche">&#10006;</a>
+                    <a href="/" class="text-2xl text-gray-400 hover:text-gray-600 ml-2" title="Effacer la recherche">&#10006;</a>
                 {% endif %}
-                {# Bouton Vue admin supprimé #}
             </form>
+        </div>
+        <!-- ...le reste du contenu... -->
         </div>
     </div>
 
     {% if view == 'admin' %}
-        <div style="margin-bottom:24px;">
-            <h3>Statistiques globales</h3>
+        <div class="mb-10">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Statistiques globales</h3>
             {% if is_admin %}
-                <form action="/upload" method="post" enctype="multipart/form-data" style="margin:16px 0;">
-                    <label for="csvfile"><strong>Mettre à jour les données (CSV) :</strong></label>
-                    <input type="file" name="csvfile" id="csvfile" accept=".csv" required>
-                    <button type="submit">Uploader</button>
+                <form action="/upload" method="post" enctype="multipart/form-data" class="flex flex-wrap items-center gap-4 mb-4 bg-white p-4 rounded-lg shadow">
+                    <label for="csvfile" class="font-semibold text-gray-700">Mettre à jour les données (CSV) :</label>
+                    <input type="file" name="csvfile" id="csvfile" accept=".csv" required class="border border-gray-300 rounded px-3 py-2">
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition">Uploader</button>
                 </form>
                 {% if upload_message %}
-                    <div style="color:green;">{{ upload_message }}</div>
+                    <div class="text-green-600 font-semibold mb-2">{{ upload_message }}</div>
                 {% endif %}
             {% endif %}
-            <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: flex-start;">
-                <div style="flex:1; min-width:220px; text-align:center;">
-                    <h5>Total apprenants</h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <h5 class="font-semibold mb-2 text-gray-700">Total apprenants</h5>
                     <canvas id="totalLearnersChart" width="180" height="180"></canvas>
                 </div>
-                <div style="flex:1; min-width:220px; text-align:center;">
-                    <h5>Ont terminé</h5>
+                <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <h5 class="font-semibold mb-2 text-gray-700">Ont terminé</h5>
                     <canvas id="completedChart" width="180" height="180"></canvas>
                 </div>
-                <div style="flex:1; min-width:220px; text-align:center;">
-                    <h5>Non terminés</h5>
+                <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <h5 class="font-semibold mb-2 text-gray-700">Non terminés</h5>
                     <canvas id="notCompletedChart" width="180" height="180"></canvas>
                 </div>
-                <div style="flex:1; min-width:220px; text-align:center;">
-                    <h5>Taux de complétion</h5>
+                <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                    <h5 class="font-semibold mb-2 text-gray-700">Taux de complétion</h5>
                     <canvas id="completionRateChart" width="180" height="180"></canvas>
                 </div>
             </div>
         </div>
-            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-            <script>
-    const totalLearners = {{ total_learners|tojson|safe }};
-    const completed = {{ completed_count|tojson|safe }};
-    const notCompleted = {{ not_completed_count|tojson|safe }};
-    const completionRate = {{ completion_rate|tojson|safe }};
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+        <script>
+            const totalLearners = {{ total_learners|tojson|safe }};
+            const completed = {{ completed_count|tojson|safe }};
+            const notCompleted = {{ not_completed_count|tojson|safe }};
+            const completionRate = {{ completion_rate|tojson|safe }};
 
-    // Total apprenants (single value bar)
-    new Chart(document.getElementById('totalLearnersChart').getContext('2d'), {
-        type: 'bar',
+            // Total apprenants (single value bar)
+            new Chart(document.getElementById('totalLearnersChart').getContext('2d'), {
+                type: 'bar',
         data: {
             labels: ['Total'],
             datasets: [{
@@ -191,59 +183,63 @@
             <strong>Aucune donnée disponible.<br>Les données sont en attente d'upload CSV.</strong>
         </div>
     {% else %}
-        <table style="margin:auto; text-align:center;">
-            <thead>
-                <tr>
-                    {% for col in columns %}
-                        {% if view == 'admin' or (col|lower != 'id' and col != 'Nom' and col != '% Achèvement') %}
-                            <th style="text-align:center;">{{ col }}</th>
+        <div class="overflow-x-auto mt-8">
+            <table class="min-w-[600px] w-full bg-white rounded-lg shadow-lg">
+                <thead>
+                    <tr>
+                        {% for col in columns %}
+                            {% if view == 'admin' or (col|lower != 'id' and col != 'Nom' and col != '% Achèvement') %}
+                                <th class="py-3 px-4 bg-gray-100 text-gray-700 font-semibold text-center">{{ col }}</th>
+                            {% endif %}
+                        {% endfor %}
+                        {% if search and view == 'simple' %}
+                            <th class="py-3 px-4 bg-gray-100 text-gray-700 font-semibold text-center">Nom</th>
                         {% endif %}
-                    {% endfor %}
-                    {% if search and view == 'simple' %}
-                        <th style="text-align:center;">Nom</th>
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in data %}
-                <tr>
-                    {% for col in columns %}
-                        {% if view == 'admin' or (col|lower != 'id' and col != 'Nom' and col != '% Achèvement') %}
-                            <td style="text-align:center;">
-                                <a href="?search={{ row['Nom'] }}{% if view %}&view={{ view }}{% endif %}" style="color:#007bff;text-decoration:underline;display:block;">{{ row[col] }}</a>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr class="hover:bg-blue-50">
+                        {% for col in columns %}
+                            {% if view == 'admin' or (col|lower != 'id' and col != 'Nom' and col != '% Achèvement') %}
+                                <td class="py-2 px-4 text-center">
+                                    <a href="?search={{ row['Nom'] }}{% if view %}&view={{ view }}{% endif %}" class="text-blue-600 underline font-semibold">{{ row[col] }}</a>
+                                </td>
+                            {% endif %}
+                        {% endfor %}
+                        {% if search and view == 'simple' %}
+                            <td class="py-2 px-4 text-center font-bold text-blue-600">
+                                <a href="?search={{ row['Nom'] }}&view=simple" class="text-blue-600 underline">{{ row['Nom'] }}</a>
                             </td>
                         {% endif %}
+                    </tr>
                     {% endfor %}
-                    {% if search and view == 'simple' %}
-                        <td style="text-align:center; font-weight:bold; color:#007bff;">
-                            <a href="?search={{ row['Nom'] }}&view=simple" style="color:#007bff;text-decoration:underline;">{{ row['Nom'] }}</a>
-                        </td>
-                    {% endif %}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     {% endif %}
 
     {% if not no_data and data and data|length == 1 %}
-        <h2>Avancement de {{ data[0]['Nom'] }}</h2>
-        <p><strong>Pourcentage d'avancement :</strong> {{ data[0]['% Achèvement'] }}%</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>Module</th>
-                        <th style="text-align:center;">Statut</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for module in module_columns %}
+        <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8 mt-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Avancement de <span class="text-blue-700">{{ data[0]['Nom'] }}</span></h2>
+            <p class="mb-6 text-lg"><span class="font-semibold">Pourcentage d'avancement :</span> <span class="text-blue-600 font-bold">{{ data[0]['% Achèvement'] }}%</span></p>
+            <table class="w-full bg-gray-50 rounded-lg overflow-hidden">
+                <thead>
                     <tr>
-                        <td>{{ module_name_map[module] }}</td>
-                            <td style="text-align:center; font-size:1.2em;">{{ data[0][module] }}</td>
+                        <th class="py-3 px-4 bg-gray-100 text-gray-700 font-semibold text-left">Module</th>
+                        <th class="py-3 px-4 bg-gray-100 text-gray-700 font-semibold text-center">Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for module in module_columns %}
+                    <tr class="border-b hover:bg-blue-50">
+                        <td class="py-2 px-4">{{ module_name_map[module] }}</td>
+                        <td class="py-2 px-4 text-center text-2xl">{{ data[0][module] }}</td>
                     </tr>
                 {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        </div>
     {% endif %}
 </body>
 </html>
