@@ -143,7 +143,11 @@ def load_data():
         df_no_dates['ID'] = [f"{i+1:03d}" for i in range(len(df_no_dates))]
     return df, df_no_dates, module_name_map
 
-@app.route('/', methods=['GET'])
+@app.route('/')
+def accueil():
+    return render_template('accueil.html')
+
+@app.route('/dashboard', methods=['GET'])
 def dashboard():
     search = request.args.get('search', '')
     view = request.args.get('view', 'simple')  # 'admin' ou 'simple'
