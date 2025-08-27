@@ -10,77 +10,8 @@
         <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_92x30dp.png" alt="Logo" class="mb-8" style="width:150px;">
         <h1 class="text-4xl font-light mb-6 text-gray-700">OIFTracker</h1>
         <form class="w-full max-w-xl">
-            <div class="flex">
-                <input type="text" name="search" value="{{ search }}" placeholder="Rechercher..." class="flex-1 px-6 py-3 rounded-l-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-xl shadow">
-                <button type="submit" class="px-6 py-3 bg-blue-500 text-white rounded-r-full font-semibold hover:bg-blue-600 transition">Rechercher</button>
-            </div>
+            <input type="text" placeholder="Rechercher..." class="w-full px-6 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-xl shadow">
         </form>
-    {% if search %}
-        {% if data and columns %}
-        <div class="w-full max-w-2xl mt-10 mx-auto">
-            <table class="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
-                <thead>
-                    <tr>
-                        {% for col in columns %}
-                            <th class="py-3 px-6 bg-gray-100 text-gray-700 font-semibold text-center">{{ col }}</th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for row in data %}
-                    <tr class="hover:bg-blue-50 transition">
-                        {% for col in columns %}
-                            {% if col == 'Nom' %}
-                                <td class="py-2 px-6 text-center">
-                                    <a href="?search={{ row['Nom'] }}&details=1" class="text-blue-700 font-bold underline">{{ row[col] }}</a>
-                                </td>
-                            {% elif col == '% Achèvement' %}
-                                <td class="py-2 px-6 text-center">
-                                    <span class="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold">{{ row[col] }}%</span>
-                                </td>
-                            {% else %}
-                                <td class="py-2 px-6 text-center">{{ row[col] }}</td>
-                            {% endif %}
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-    {% if data and data|length == 1 and request.args.get('details') %}
-    <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl p-8 mt-10">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Modules et avancement de <span class="text-blue-700">{{ data[0]['Nom'] }}</span></h2>
-        <div class="flex justify-center mb-6">
-            <span class="inline-block px-4 py-2 rounded-full bg-blue-100 text-blue-700 font-bold text-lg">{{ data[0]['% Achèvement'] }}% complété</span>
-        </div>
-        <table class="w-full bg-gray-50 rounded-lg overflow-hidden">
-            <thead>
-                <tr>
-                    <th class="py-3 px-6 bg-gray-100 text-gray-700 font-semibold text-left">Module</th>
-                    <th class="py-3 px-6 bg-gray-100 text-gray-700 font-semibold text-center">Statut</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% set module_keys = [] %}
-            {% for key in data[0].keys() %}
-                {% if key.startswith('M') %}
-                    {% set _ = module_keys.append(key) %}
-                {% endif %}
-            {% endfor %}
-            {% for module in module_keys %}
-                <tr class="border-b hover:bg-blue-50">
-                    <td class="py-2 px-6 font-semibold">{{ module }}</td>
-                    <td class="py-2 px-6 text-center text-2xl">{{ data[0][module] }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% endif %}
-        </div>
-        {% else %}
-            <div class="mt-10 text-center text-gray-500">Aucun apprenant trouvé.</div>
-        {% endif %}
-    {% endif %}
     </div>
     <a href="/login" class="fixed bottom-6 right-6 bg-gray-200 text-gray-600 px-4 py-2 rounded-full shadow hover:bg-blue-500 hover:text-white transition text-sm opacity-70">Connexion</a>
 </body>

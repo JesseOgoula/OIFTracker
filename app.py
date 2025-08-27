@@ -220,7 +220,7 @@ def accueil():
     else:
         data = []
         columns = []
-    return render_template('accueil.html', data=data, columns=columns, search=search)
+    return render_template('accueil.html', data=data, columns=columns, search=search, module_name_map=module_name_map)
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
