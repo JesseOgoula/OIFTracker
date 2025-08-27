@@ -143,9 +143,84 @@ def load_data():
         df_no_dates['ID'] = [f"{i+1:03d}" for i in range(len(df_no_dates))]
     return df, df_no_dates, module_name_map
 
-@app.route('/')
+
+@app.route('/', methods=['GET'])
 def accueil():
-    return render_template('accueil.html')
+    search = request.args.get('search', '')
+    upload_dir = os.path.join(os.path.dirname(__file__), 'upload')
+    all_files = [f for f in os.listdir(upload_dir) if f.endswith('.csv')]
+    dfs = []
+    for file in all_files:
+        path = os.path.join(upload_dir, file)
+        try:
+            df = pd.read_csv(path, encoding='utf-8-sig')
+        except UnicodeDecodeError:
+            try:
+                df = pd.read_csv(path, encoding='latin1')
+            except Exception:
+                continue
+        dfs.append(df)
+    if dfs:
+        df_all = pd.concat(dfs, ignore_index=True)
+        # Nettoyage et transformation comme dashboard
+        date_cols = [col for col in df_all.columns if 'Date d’achèvement' in col]
+        df_no_dates = df_all.drop(columns=date_cols) if date_cols else df_all
+        module_map = {}
+        module_code_cols = {}
+        module_name_map = {}
+        for col in df_no_dates.columns:
+            if col.startswith('M'):
+                code = col.split()[0]
+                module_code_cols.setdefault(code, []).append(col)
+                module_name = col[len(code):].strip()
+                module_name_map[col] = module_name if module_name else code
+        for code, cols in module_code_cols.items():
+            if len(cols) > 1:
+                for idx, col in enumerate(cols, 1):
+                    module_map[col] = f"{code}_{idx}"
+                    module_name_map[f"{code}_{idx}"] = module_name_map[col]
+            else:
+                module_map[cols[0]] = code
+                module_name_map[code] = module_name_map[cols[0]]
+        df_no_dates = df_no_dates.rename(columns=module_map)
+        df_no_dates = df_no_dates.replace('Terminé (note minimale de réussite atteinte)', 'Terminé')
+        df_no_dates = df_no_dates.replace('Terminé (n’a pas atteint la note minimale de réussite)', 'Pas terminé')
+        df_no_dates = df_no_dates.replace('Terminé', '✅')
+        df_no_dates = df_no_dates.replace('Pas terminé', '❌')
+        module_cols = [col for col in df_no_dates.columns if col.startswith('M')]
+        def cours_termine(row):
+            vals = [str(row[col]) for col in module_cols if col in row]
+            return '✅' if vals and all(val == '✅' for val in vals) else '❌'
+        df_no_dates['Cours terminé'] = df_no_dates.apply(cours_termine, axis=1)
+        if 'ID' in df_no_dates.columns:
+            df_no_dates['ID'] = [f"{i+1:03d}" for i in range(len(df_no_dates))]
+        # Recherche
+        if search:
+            df_search = df_all[df_all['Nom'].str.contains(search, case=False, na=False)]
+            df_no_dates_search = df_no_dates[df_no_dates['Nom'].str.contains(search, case=False, na=False)]
+            data = df_no_dates_search.to_dict(orient='records')
+            columns = []
+            if 'ID' in df_no_dates.columns:
+                columns.append('ID')
+            if 'Nom' in df_no_dates.columns:
+                columns.append('Nom')
+            columns.append('% Achèvement')
+            percent_search_list = []
+            def percent_row(row):
+                module_cols = [col for col in df_no_dates.columns if col.startswith('M')]
+                total = len(module_cols)
+                done = sum([1 for col in module_cols if row[col] == '✅'])
+                return round((done / total) * 100, 1) if total > 0 else 0
+            percent_search_list = [percent_row(row) for _, row in df_no_dates_search.iterrows()]
+            for i, row in enumerate(data):
+                row['% Achèvement'] = percent_search_list[i]
+        else:
+            data = []
+            columns = []
+    else:
+        data = []
+        columns = []
+    return render_template('accueil.html', data=data, columns=columns, search=search)
 
 @app.route('/dashboard', methods=['GET'])
 def dashboard():
