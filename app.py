@@ -64,24 +64,42 @@ def logout():
 
 
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), 'upload')
-CSV_PATH = os.path.join(UPLOAD_DIR, 'completion-mn072025-20250823_1539-comma_separated.csv')
+
+def get_csv_path_for_tuteur(tuteur_id):
+    return os.path.join(UPLOAD_DIR, f'completion_{tuteur_id}.csv')
+
 
 @app.route('/upload', methods=['POST'])
 def upload():
     if not session.get('is_admin'):
         return redirect(url_for('dashboard'))
+    tuteur_id = session.get('user_id')
+    if not tuteur_id:
+        session['upload_message'] = "Erreur : identifiant tuteur manquant."
+        return redirect(url_for('dashboard', view='admin'))
     file = request.files.get('csvfile')
     if file and file.filename.endswith('.csv'):
-        file.save(CSV_PATH)
+        csv_path = get_csv_path_for_tuteur(tuteur_id)
+        file.save(csv_path)
         session['upload_message'] = "Fichier CSV mis à jour avec succès."
     else:
         session['upload_message'] = "Erreur : fichier non valide."
     return redirect(url_for('dashboard', view='admin'))
 
 def load_data():
-    if not os.path.exists(CSV_PATH):
+    tuteur_id = session.get('user_id')
+    if not tuteur_id:
         return None, None, {}
-    df = pd.read_csv(CSV_PATH)
+    csv_path = get_csv_path_for_tuteur(tuteur_id)
+    if not os.path.exists(csv_path):
+        return None, None, {}
+    try:
+        df = pd.read_csv(csv_path, encoding='utf-8-sig')
+    except UnicodeDecodeError:
+        try:
+            df = pd.read_csv(csv_path, encoding='latin1')
+        except Exception as e:
+            return None, None, {}
     # Masquer les colonnes de date d’achèvement
     date_cols = [col for col in df.columns if 'Date d’achèvement' in col]
     df_no_dates = df.drop(columns=date_cols)
@@ -246,7 +264,9 @@ def dashboard():
         view=view,
         is_admin=is_admin,
         upload_message=upload_message,
-        no_data=False
+        no_data=False,
+        nom=session.get('nom'),
+        groupe=session.get('groupe')
     )
 
 if __name__ == '__main__':
