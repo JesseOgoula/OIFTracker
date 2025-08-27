@@ -7,19 +7,12 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="container mx-auto py-10">
-        {% if view != 'admin' and not is_admin %}
-            <div class="flex justify-center mb-8">
-                <a href="/login" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold shadow hover:bg-blue-700 transition">Connexion</a>
-            </div>
-        {% endif %}
         <div class="flex flex-col items-center">
             <h1 class="text-3xl font-bold mb-6 text-gray-800">Dashboard des Apprenants</h1>
-            {% if view == 'admin' and is_admin %}
-                <div class="flex gap-4 mb-6 items-center">
-                    <span class="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 font-semibold">Tuteur : {{ nom }} | Groupe : {{ groupe }}</span>
-                    <a href="/logout" class="px-5 py-2 bg-red-600 text-white rounded-lg font-bold shadow hover:bg-red-700 transition">Déconnexion</a>
-                </div>
-            {% endif %}
+            <div class="flex gap-4 mb-6 items-center">
+                <span class="px-4 py-2 bg-gray-200 rounded-lg text-gray-700 font-semibold">Tuteur : {{ nom }} | Groupe : {{ groupe }}</span>
+                <a href="/logout" class="px-5 py-2 bg-red-600 text-white rounded-lg font-bold shadow hover:bg-red-700 transition">Déconnexion</a>
+            </div>
             <form method="get" class="flex items-center gap-2 w-full max-w-xl mb-8">
                 <input type="text" name="search" placeholder="Rechercher par nom..." value="{{ search }}" class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-lg">
                 <button type="submit" class="px-5 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition">Rechercher</button>
@@ -32,150 +25,147 @@
         </div>
     </div>
 
-    {% if view == 'admin' %}
-        <div class="mb-10">
-            <h3 class="text-xl font-bold mb-4 text-gray-800">Statistiques globales</h3>
-            {% if is_admin %}
-                <form action="/upload" method="post" enctype="multipart/form-data" class="flex flex-wrap items-center gap-4 mb-4 bg-white p-4 rounded-lg shadow">
-                    <label for="csvfile" class="font-semibold text-gray-700">Mettre à jour les données (CSV) :</label>
-                    <input type="file" name="csvfile" id="csvfile" accept=".csv" required class="border border-gray-300 rounded px-3 py-2">
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition">Uploader</button>
-                </form>
-                {% if upload_message %}
-                    <div class="text-green-600 font-semibold mb-2">{{ upload_message }}</div>
-                {% endif %}
-            {% endif %}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-                    <h5 class="font-semibold mb-2 text-gray-700">Total apprenants</h5>
-                    <canvas id="totalLearnersChart" width="180" height="180"></canvas>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-                    <h5 class="font-semibold mb-2 text-gray-700">Ont terminé</h5>
-                    <canvas id="completedChart" width="180" height="180"></canvas>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-                    <h5 class="font-semibold mb-2 text-gray-700">Non terminés</h5>
-                    <canvas id="notCompletedChart" width="180" height="180"></canvas>
-                </div>
-                <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
-                    <h5 class="font-semibold mb-2 text-gray-700">Taux de complétion</h5>
-                    <canvas id="completionRateChart" width="180" height="180"></canvas>
-                </div>
+
+    <div class="mb-10">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Statistiques globales</h3>
+        <form action="/upload" method="post" enctype="multipart/form-data" class="flex flex-wrap items-center gap-4 mb-4 bg-white p-4 rounded-lg shadow">
+            <label for="csvfile" class="font-semibold text-gray-700">Mettre à jour les données (CSV) :</label>
+            <input type="file" name="csvfile" id="csvfile" accept=".csv" required class="border border-gray-300 rounded px-3 py-2">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition">Uploader</button>
+        </form>
+        {% if upload_message %}
+            <div class="text-green-600 font-semibold mb-2">{{ upload_message }}</div>
+        {% endif %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                <h5 class="font-semibold mb-2 text-gray-700">Total apprenants</h5>
+                <canvas id="totalLearnersChart" width="180" height="180"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                <h5 class="font-semibold mb-2 text-gray-700">Ont terminé</h5>
+                <canvas id="completedChart" width="180" height="180"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                <h5 class="font-semibold mb-2 text-gray-700">Non terminés</h5>
+                <canvas id="notCompletedChart" width="180" height="180"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow p-4 flex flex-col items-center">
+                <h5 class="font-semibold mb-2 text-gray-700">Taux de complétion</h5>
+                <canvas id="completionRateChart" width="180" height="180"></canvas>
             </div>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-        <script>
-            const totalLearners = {{ total_learners|tojson|safe }};
-            const completed = {{ completed_count|tojson|safe }};
-            const notCompleted = {{ not_completed_count|tojson|safe }};
-            const completionRate = {{ completion_rate|tojson|safe }};
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script>
+        const totalLearners = JSON.parse('{{ total_learners|tojson|safe }}');
+        const completed = JSON.parse('{{ completed_count|tojson|safe }}');
+        const notCompleted = JSON.parse('{{ not_completed_count|tojson|safe }}');
+        const completionRate = JSON.parse('{{ completion_rate|tojson|safe }}');
 
-            // Total apprenants (single value bar)
-            new Chart(document.getElementById('totalLearnersChart').getContext('2d'), {
-                type: 'bar',
-        data: {
-            labels: ['Total'],
-            datasets: [{
-                label: 'Apprenants',
-                data: [totalLearners],
-                backgroundColor: ['#007bff']
-            }]
-        },
-        options: {
-            plugins: {
-                legend: { display: false },
-                datalabels: {
-                    anchor: 'end',
-                    align: 'top',
-                    color: '#333',
-                    font: { weight: 'bold', size: 18 },
-                    formatter: function(value) { return value; }
-                }
+        // Total apprenants (single value bar)
+        new Chart(document.getElementById('totalLearnersChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['Total'],
+                datasets: [{
+                    label: 'Apprenants',
+                    data: [totalLearners],
+                    backgroundColor: ['#007bff']
+                }]
             },
-            scales: { y: { beginAtZero: true } }
-        },
-        plugins: [ChartDataLabels]
-    });
-
-    // Ont terminé (doughnut)
-    new Chart(document.getElementById('completedChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Terminés', 'Reste'],
-            datasets: [{
-                data: [completed, totalLearners - completed],
-                backgroundColor: ['#28a745', '#e9ecef']
-            }]
-        },
-        options: {
-            plugins: {
-                legend: { position: 'bottom' },
-                datalabels: {
-                    color: '#333',
-                    font: { weight: 'bold', size: 18 },
-                    formatter: function(value, ctx) {
-                        return value;
+            options: {
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#333',
+                        font: { weight: 'bold', size: 18 },
+                        formatter: function(value) { return value; }
                     }
-                }
-            }
-        },
-        plugins: [ChartDataLabels]
-    });
+                },
+                scales: { y: { beginAtZero: true } }
+            },
+            plugins: [ChartDataLabels]
+        });
 
-    // Non terminés (doughnut)
-    new Chart(document.getElementById('notCompletedChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Non terminés', 'Reste'],
-            datasets: [{
-                data: [notCompleted, totalLearners - notCompleted],
-                backgroundColor: ['#dc3545', '#e9ecef']
-            }]
-        },
-        options: {
-            plugins: {
-                legend: { position: 'bottom' },
-                datalabels: {
-                    color: '#333',
-                    font: { weight: 'bold', size: 18 },
-                    formatter: function(value, ctx) {
-                        return value;
-                    }
-                }
-            }
-        },
-        plugins: [ChartDataLabels]
-    });
-
-    // Taux de complétion (radial bar)
-    new Chart(document.getElementById('completionRateChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: ['Complété', 'Non complété'],
-            datasets: [{
-                data: [completionRate, 100 - completionRate],
-                backgroundColor: ['#17a2b8', '#e9ecef']
-            }]
-        },
-        options: {
-            plugins: {
-                legend: { position: 'bottom' },
-                datalabels: {
-                    color: '#333',
-                    font: { weight: 'bold', size: 18 },
-                    formatter: function(value, ctx) {
-                        return value + (ctx.dataIndex === 0 ? ' %' : '');
+        // Ont terminé (doughnut)
+        new Chart(document.getElementById('completedChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Terminés', 'Reste'],
+                datasets: [{
+                    data: [completed, totalLearners - completed],
+                    backgroundColor: ['#28a745', '#e9ecef']
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#333',
+                        font: { weight: 'bold', size: 18 },
+                        formatter: function(value, ctx) {
+                            return value;
+                        }
                     }
                 }
             },
-            cutout: '80%'
-        },
-        plugins: [ChartDataLabels]
-    });
-            </script>
-    {% endif %}
+            plugins: [ChartDataLabels]
+        });
+
+        // Non terminés (doughnut)
+        new Chart(document.getElementById('notCompletedChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Non terminés', 'Reste'],
+                datasets: [{
+                    data: [notCompleted, totalLearners - notCompleted],
+                    backgroundColor: ['#dc3545', '#e9ecef']
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#333',
+                        font: { weight: 'bold', size: 18 },
+                        formatter: function(value, ctx) {
+                            return value;
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+
+        // Taux de complétion (radial bar)
+        new Chart(document.getElementById('completionRateChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Complété', 'Non complété'],
+                datasets: [{
+                    data: [completionRate, 100 - completionRate],
+                    backgroundColor: ['#17a2b8', '#e9ecef']
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom' },
+                    datalabels: {
+                        color: '#333',
+                        font: { weight: 'bold', size: 18 },
+                        formatter: function(value, ctx) {
+                            return value + (ctx.dataIndex === 0 ? ' %' : '');
+                        }
+                    }
+                },
+                cutout: '80%'
+            },
+            plugins: [ChartDataLabels]
+        });
+    </script>
 
     {% if no_data %}
         <div style="margin:40px 0; text-align:center; color:#888; font-size:1.3em;">
@@ -200,17 +190,10 @@
                     {% for row in data %}
                     <tr class="hover:bg-blue-50">
                         {% for col in columns %}
-                            {% if view == 'admin' or (col|lower != 'id' and col != 'Nom' and col != '% Achèvement') %}
-                                <td class="py-2 px-4 text-center">
-                                    <a href="?search={{ row['Nom'] }}{% if view %}&view={{ view }}{% endif %}" class="text-blue-600 underline font-semibold">{{ row[col] }}</a>
-                                </td>
-                            {% endif %}
-                        {% endfor %}
-                        {% if search and view == 'simple' %}
-                            <td class="py-2 px-4 text-center font-bold text-blue-600">
-                                <a href="?search={{ row['Nom'] }}&view=simple" class="text-blue-600 underline">{{ row['Nom'] }}</a>
+                            <td class="py-2 px-4 text-center">
+                                <a href="?search={{ row['Nom'] }}" class="text-blue-600 underline font-semibold">{{ row[col] }}</a>
                             </td>
-                        {% endif %}
+                        {% endfor %}
                     </tr>
                     {% endfor %}
                 </tbody>
