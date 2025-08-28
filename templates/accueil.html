@@ -11,8 +11,13 @@
         <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_92x30dp.png" alt="Logo" class="mb-8" style="width:150px;">
         <h1 class="text-4xl font-light mb-6 text-gray-700">OIFTracker</h1>
         <form class="w-full max-w-xl" method="get">
-            <div class="flex">
-                <input type="text" name="search" value="{{ search }}" placeholder="Rechercher..." class="flex-1 px-6 py-3 rounded-l-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-xl shadow">
+            <div class="flex items-center relative w-full">
+                <div class="flex-1 relative">
+                    <input type="text" id="searchInput" name="search" value="{{ search }}" placeholder="Rechercher..." class="w-full px-6 py-3 rounded-l-full border border-gray-300 focus:outline-none text-xl shadow pr-10">
+                    {% if search %}
+                    <button type="button" onclick="document.getElementById('searchInput').value=''; document.getElementById('searchInput').form.submit();" class="absolute top-1/2 right-4 transform -translate-y-1/2 text-gray-400 hover:text-red-500 text-2xl font-bold transition" style="background:none; border:none; cursor:pointer;">&times;</button>
+                    {% endif %}
+                </div>
                 <button type="submit" class="px-6 py-3 bg-blue-500 text-white rounded-r-full font-semibold hover:bg-blue-600 transition">Rechercher</button>
             </div>
         </form>
