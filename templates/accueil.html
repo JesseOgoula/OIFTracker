@@ -6,13 +6,92 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white min-h-screen flex flex-col justify-center items-center">
-    <div class="flex flex-col items-center justify-center h-screen w-full">
+    <div class="flex flex-col items-center justify-center w-full min-h-[60vh] pt-0 pb-0">
         <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_92x30dp.png" alt="Logo" class="mb-8" style="width:150px;">
         <h1 class="text-4xl font-light mb-6 text-gray-700">OIFTracker</h1>
-        <form class="w-full max-w-xl">
-            <input type="text" placeholder="Rechercher..." class="w-full px-6 py-3 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-xl shadow">
+        <form class="w-full max-w-xl" method="get">
+            <div class="flex">
+                <input type="text" name="search" value="{{ search }}" placeholder="Rechercher..." class="flex-1 px-6 py-3 rounded-l-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-xl shadow">
+                <button type="submit" class="px-6 py-3 bg-blue-500 text-white rounded-r-full font-semibold hover:bg-blue-600 transition">Rechercher</button>
+            </div>
         </form>
     </div>
-    <a href="/login" class="fixed bottom-6 right-6 bg-gray-200 text-gray-600 px-4 py-2 rounded-full shadow hover:bg-blue-500 hover:text-white transition text-sm opacity-70">Connexion</a>
+    {% if search %}
+        {% if data and columns %}
+            {% if data and data|length == 1 and request.args.get('details') %}
+                <!-- Vue détaillée (déjà stylée dans les versions précédentes) -->
+                <div class="w-full max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-8 my-8 relative">
+                    {% set module_keys = [] %}
+                    {% for key in data[0].keys() %}
+                        {% if key.startswith('M') %}
+                            {% set _ = module_keys.append(key) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set total_modules = module_keys|length %}
+                    {% set completed_modules = 0 %}
+                    {% for module in module_keys %}
+                        {% if data[0][module] == '✅' %}
+                            {% set completed_modules = completed_modules + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    <div class="flex flex-row items-center justify-between mb-8">
+                        <h2 class="text-2xl font-bold text-blue-700">{{ data[0]['Nom'] }}</h2>
+                    </div>
+                    <a href="?search=" class="absolute top-0 right-0 text-gray-400 hover:text-red-500 text-5xl font-bold transition z-10" style="line-height:1; padding:0.5rem 1.5rem;" title="Fermer la vue">&times;</a>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-2 w-full">
+                        {% for module in module_keys %}
+                        <div class="bg-white rounded border border-gray-100 shadow p-1 flex flex-col items-center justify-center min-h-[40px]">
+                            <span class="text-center text-xs font-normal text-gray-800 mb-1 leading-tight">{{ module_name_map.get(module, module) }}</span>
+                            {% if data[0][module] == '✅' %}
+                                <span class="inline-block align-middle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 24 24"><rect width="24" height="24" fill="none"/><path d="M9.5 17.5l-5-5 1.41-1.41L9.5 14.67l8.09-8.09L19 7.5z"/></svg>
+                                </span>
+                            {% else %}
+                                <span class="inline-block align-middle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect width="24" height="24" fill="none"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <!-- Tableau des résultats de recherche -->
+                <div class="w-full max-w-2xl mt-4 mx-auto">
+                    <table class="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
+                        <thead>
+                            <tr>
+                                {% for col in columns %}
+                                    <th class="py-3 px-6 bg-gray-100 text-gray-700 font-semibold text-center">{{ col }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in data %}
+                            <tr class="hover:bg-blue-50 transition">
+                                {% for col in columns %}
+                                    {% if col == 'Nom' %}
+                                        <td class="py-2 px-6 text-center">
+                                            <a href="?search={{ row['Nom'] }}&details=1" class="text-blue-700 font-bold underline">{{ row[col] }}</a>
+                                        </td>
+                                    {% elif col == '% Achèvement' %}
+                                        <td class="py-2 px-6 text-center">
+                                            <span class="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold">{{ row[col] }}%</span>
+                                        </td>
+                                    {% else %}
+                                        <td class="py-2 px-6 text-center">{{ row[col] }}</td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="mt-10 text-center text-gray-500">Aucun apprenant trouvé.</div>
+        {% endif %}
+    {% endif %}
+        <a href="/login" class="fixed bottom-6 right-6 bg-gray-200 text-gray-600 px-4 py-2 rounded-full shadow hover:bg-blue-500 hover:text-white transition text-sm opacity-70">Connexion</a>
 </body>
 </html>
