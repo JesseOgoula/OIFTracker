@@ -16,10 +16,12 @@ PRE_LOGIN_PASSWORD = "WJX$wfZ8TuxgBDk"  # Change ce mot de passe
 # Page pré-login
 @app.route('/prelogin', methods=['GET', 'POST'])
 def prelogin():
+    import time
     if request.method == 'POST':
         password = request.form.get('password')
         if password == PRE_LOGIN_PASSWORD:
             session['prelogin_ok'] = True
+            session['prelogin_time'] = int(time.time())
             return redirect(url_for('login'))
         else:
             flash("Mot de passe incorrect.")
@@ -49,7 +51,15 @@ def register():
 # Connexion
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if not session.get('prelogin_ok'):
+    import time
+    prelogin_ok = session.get('prelogin_ok')
+    prelogin_time = session.get('prelogin_time')
+    now = int(time.time())
+    # Expire après 5 minutes
+    if not prelogin_ok or not prelogin_time or now - prelogin_time > 300:
+        session.pop('prelogin_ok', None)
+        session.pop('prelogin_time', None)
+        flash("Veuillez d'abord passer par la page de prélogin.", "warning")
         return redirect(url_for('prelogin'))
     if request.method == 'POST':
         email = request.form.get('email')
@@ -160,6 +170,7 @@ def load_data():
 @app.route('/', methods=['GET'])
 def accueil():
     search = request.args.get('search', '')
+    module_name_map = {}
     upload_dir = os.path.join(os.path.dirname(__file__), 'upload')
     all_files = [f for f in os.listdir(upload_dir) if f.endswith('.csv')]
     dfs = []
