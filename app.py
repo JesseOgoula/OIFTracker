@@ -11,8 +11,19 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 app = Flask(__name__)
 app.secret_key = 'change_this_secret_key'
 
+PRE_LOGIN_PASSWORD = "WJX$wfZ8TuxgBDk"  # Change ce mot de passe
 
-
+# Page pré-login
+@app.route('/prelogin', methods=['GET', 'POST'])
+def prelogin():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == PRE_LOGIN_PASSWORD:
+            session['prelogin_ok'] = True
+            return redirect(url_for('login'))
+        else:
+            flash("Mot de passe incorrect.")
+    return render_template('prelogin.html')
 # Inscription
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -38,6 +49,8 @@ def register():
 # Connexion
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if not session.get('prelogin_ok'):
+        return redirect(url_for('prelogin'))
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
