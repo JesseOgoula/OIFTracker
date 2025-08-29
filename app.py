@@ -11,7 +11,7 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 app = Flask(__name__)
 app.secret_key = 'change_this_secret_key'
 
-PRE_LOGIN_PASSWORD = "WJX$wfZ8TuxgBDk"  # Change ce mot de passe
+PRE_LOGIN_PASSWORD = "JX$wfZ8TuxgBDk"  # Change ce mot de passe
 
 # Page pré-login
 @app.route('/prelogin', methods=['GET', 'POST'])
